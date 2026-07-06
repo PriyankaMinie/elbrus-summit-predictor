@@ -241,7 +241,7 @@ Training data covers July-August only. Shoulder season conditions (September-Oct
 ## 👤 Author
 
 
-**Priyanka** — Senior Data Engineer and mountaineer.
+**Priyanka** - Senior Data Engineer and mountaineer.
 
 I wanted to build something that combines my two highest states of flow - data engineering and mountaineering. I summitted Elbrus (5,642m) and stood at the highest point in Europe in Aug, 2025. This project was born from a simple question I asked myself on the way down: what does the data actually say about summit day?
 

@@ -1,0 +1,9 @@
+.env
+*.pkl
+__pycache__/
+*.pyc
+*.nc
+FirstTimeSetUp.txt
+SoftwareInstallation.txt
+pwd.txt
+tempCodeRunnerFile.py

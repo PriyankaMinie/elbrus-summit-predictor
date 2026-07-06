@@ -1,3 +1,0 @@
-DataFrame is like a dictionary remember? Columns are keys:
-person = {"name": "Priyanka", "age": 36}
-person["name"]  → "Priyanka"

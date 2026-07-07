@@ -240,4 +240,8 @@ Training data covers July-August only. Shoulder season conditions (September-Oct
 
 ## 👤 Author
 
-Built as a portfolio project demonstrating end-to-end data engineering skills — from raw weather data ingestion through to a live ML-powered prediction dashboard.
+Priyanka - Senior Data Engineer and mountaineer.
+
+I wanted to build something that combines my two highest states of flow - data engineering and mountaineering. I summitted Elbrus (5,642m) and stood at the highest point in Europe in Aug, 2025. This project was born from a simple question I asked myself on the way down: what does the data actually say about summit day?
+
+This is my answer.

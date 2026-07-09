@@ -66,3 +66,11 @@ if \_\_name\_\_ == "\_\_main\_\_":
 
 \*\*Why both files still exist in the repo:\*\* `dags/openmeteo\_pipeline.py` is kept for reference / local Airflow use (V1). `fetch\_openmeteo\_daily.py` is the cloud-scheduled version (V2). They are functionally equivalent — same data, same destination table, same conflict handling.
 
+
+## No hosted Airflow instance exists
+
+Important to note for future reference: this project does **not** have Airflow running anywhere in the cloud. Airflow only exists in one place — locally, via WSL (`airflow api-server`, `airflow scheduler`, `airflow dag-processor`), viewable at `http://localhost:8080` only when those services are manually started.
+
+The original roadmap considered deploying real Airflow to the cloud (Google Cloud Composer or AWS MWAA), but that was deliberately skipped in favor of GitHub Actions — a full managed Airflow deployment is heavy, often paid infrastructure for what is just one daily fetch task.
+
+GitHub Actions is **not** Airflow and does not have a DAG graph view. It shows a simpler linear step-by-step log (Checkout repo → Set up Python → Install dependencies → Run fetch script), visible under the repo's **Actions** tab. There is no "Airflow website" or hosted DAG graph for this project — only the local Airflow UI (when manually started) or the GitHub Actions run log (for the cloud-scheduled version).

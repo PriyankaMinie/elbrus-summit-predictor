@@ -74,3 +74,12 @@ Important to note for future reference: this project does **not** have Airflow r
 The original roadmap considered deploying real Airflow to the cloud (Google Cloud Composer or AWS MWAA), but that was deliberately skipped in favor of GitHub Actions — a full managed Airflow deployment is heavy, often paid infrastructure for what is just one daily fetch task.
 
 GitHub Actions is **not** Airflow and does not have a DAG graph view. It shows a simpler linear step-by-step log (Checkout repo → Set up Python → Install dependencies → Run fetch script), visible under the repo's **Actions** tab. There is no "Airflow website" or hosted DAG graph for this project — only the local Airflow UI (when manually started) or the GitHub Actions run log (for the cloud-scheduled version).
+## FastAPI deployment to Render — lessons learned
+
+**Problem 1 — bloated `requirements.txt`:** the root `requirements.txt` was generated via `pip freeze` against the full local dev environment, which includes `apache-airflow` and its ~150 sub-dependencies. Render's build failed trying to resolve packages like `backports.strenum` that aren't needed by the API at all. `app.py` only imports `fastapi`, `pydantic`, `joblib`, and `numpy` (with `xgboost`/`scikit-learn` needed indirectly to unpickle the trained model). **Fix:** created a separate, minimal `requirements-api.txt` containing only what the API service actually needs, and pointed Render's Build Command at that file instead.
+
+**Problem 2 — wrong Python version:** Render defaulted to Python 3.14, but the project (and pinned package versions like `numpy==1.24.1`) targets Python 3.10. A `runtime.txt` file (the Heroku convention) had no effect on Render. **Fix:** Render uses an environment variable instead — set `PYTHON_VERSION=3.10.11` under the service's Environment tab.
+
+**Problem 3 — missing model file:** `elbrus_model.pkl` was excluded via `.gitignore` (`*.pkl`), which is good practice for large binaries, but this model is only ~44KB, so it was removed from `.gitignore` and committed directly so Render (which only has access to what's in the GitHub repo) could load it at runtime.
+
+**Takeaway for future deployments (e.g. Streamlit to Streamlit Community Cloud):** always use a service-specific, minimal `requirements.txt` rather than the full local dev environment's `pip freeze` output, and check whether the target platform needs a Python version pinned via an environment variable rather than `runtime.txt`.

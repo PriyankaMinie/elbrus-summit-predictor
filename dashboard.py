@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 import os
 from dotenv import load_dotenv
 
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Elbrus Summit Predictor", page_icon="🏔️", layout="wide")
 
@@ -204,7 +205,7 @@ payload = {
 }
 
 try:
-    response = requests.post("http://127.0.0.1:8000/predict/summit", json=payload)
+    response = requests.post(f"{API_URL}/predict/summit", json=payload)
     result = response.json()
     is_climbable = result["is_climbable"]
     probability = result["probability"]

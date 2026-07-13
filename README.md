@@ -1,10 +1,10 @@
-# 🏔️ Elbrus Summit Predictor
+# Elbrus Summit Predictor
 
 An end-to-end data engineering and machine learning pipeline that predicts whether Mount Elbrus (5,642m) is safe to summit on any given day, using real weather data at summit altitude.
 
 ---
 
-## 🔗 Live Demo (V2 — Cloud Deployment)
+##  Live Demo (V2 — Cloud Deployment)
 
 - **Dashboard:** [elbrus-summit-predictor.streamlit.app](https://elbrus-summit-predictor.streamlit.app)
 - **API docs:** [elbrus-api.onrender.com/docs](https://elbrus-api.onrender.com/docs)
@@ -13,7 +13,7 @@ An end-to-end data engineering and machine learning pipeline that predicts wheth
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 Mount Elbrus is the highest peak in Europe and one of the Seven Summits. Summit attempts are highly weather-dependent — wind, temperature, precipitation, and snowfall can turn a safe climb into a life-threatening situation within hours.
 
@@ -28,7 +28,7 @@ The project was built in two stages: **V1**, a local proof-of-concept pipeline, 
 
 ---
 
-## 🏗️ Architecture (V1 — Local)
+## Architecture (V1 — Local)
 
 ```
 ERA5 Historical Data (.nc)
@@ -52,7 +52,7 @@ Open-Meteo API → Kafka → Airflow → PostgreSQL (openmeteo_raw)
 
 ---
 
-## ☁️ Architecture (V2 — Cloud)
+## Architecture (V2 — Cloud)
 
 V2 takes the same pipeline from V1 and moves it to the cloud, so it runs continuously without a laptop.
 
@@ -87,7 +87,7 @@ See `MIGRATION_NOTES.md` for the full technical breakdown of what changed and wh
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -107,7 +107,7 @@ See `MIGRATION_NOTES.md` for the full technical breakdown of what changed and wh
 
 ---
 
-## 📊 Model Performance
+## Model Performance
 
 | Metric | Logistic Regression | XGBoost |
 |--------|-------------------|---------|
@@ -123,7 +123,7 @@ See `MIGRATION_NOTES.md` for the full technical breakdown of what changed and wh
 
 ---
 
-## ⚠️ Safety Thresholds
+## Safety Thresholds
 
 The model was trained on these climbability rules:
 
@@ -136,7 +136,7 @@ The model was trained on these climbability rules:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Portfolio_Project/
@@ -170,7 +170,7 @@ Portfolio_Project/
 
 ---
 
-## 🚀 How to Run Locally (V1)
+## How to Run Locally (V1)
 
 ### Prerequisites
 - Python 3.10+
@@ -232,7 +232,7 @@ python -m streamlit run dashboard.py
 
 ---
 
-## ☁️ Cloud Deployment (V2)
+## Cloud Deployment (V2)
 
 The live deployment (linked at the top of this README) runs on:
 
@@ -245,7 +245,7 @@ Credentials are stored as GitHub Secrets (for the Actions workflow) and as platf
 
 ---
 
-## 🔌 FastAPI Endpoint
+## FastAPI Endpoint
 
 **POST** `/predict/summit`
 
@@ -275,7 +275,7 @@ Try it live at the [API docs link](https://elbrus-api.onrender.com/docs) above, 
 
 ---
 
-## ⚠️ Known Limitations
+## Known Limitations
 
 ### 1. Small training dataset
 The model was trained on only 123 days (July-August, 2021-2022). This is a proof-of-concept — a production system would require significantly more historical data.
@@ -291,7 +291,7 @@ Training data covers July-August only. Shoulder season conditions (September-Oct
 
 ---
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - [ ] Expand ERA5 dataset — download 2018-2024, include September-October
 - [ ] Reconsider temperature threshold — -10°C or -12°C more realistic for summer
@@ -304,14 +304,14 @@ Training data covers July-August only. Shoulder season conditions (September-Oct
 
 ---
 
-## 📌 Data Sources
+## Data Sources
 
 - **ERA5:** ECMWF Reanalysis v5 — https://cds.climate.copernicus.eu
 - **Open-Meteo:** Free weather API — https://open-meteo.com
 
 ---
 
-## 👤 Author
+## Author
 
 **Priyanka** - Senior Data Engineer and mountaineer.
 

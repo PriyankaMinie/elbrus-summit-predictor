@@ -4,20 +4,31 @@ An end-to-end data engineering and machine learning pipeline that predicts wheth
 
 ---
 
+## 🔗 Live Demo (V2 — Cloud Deployment)
+
+- **Dashboard:** [elbrus-summit-predictor.streamlit.app](https://elbrus-summit-predictor.streamlit.app)
+- **API docs:** [elbrus-api.onrender.com/docs](https://elbrus-api.onrender.com/docs)
+
+> Free-tier hosting — the API may take 30-60 seconds to wake up if it's been idle.
+
+---
+
 ## 🎯 Project Overview
 
 Mount Elbrus is the highest peak in Europe and one of the Seven Summits. Summit attempts are highly weather-dependent — wind, temperature, precipitation, and snowfall can turn a safe climb into a life-threatening situation within hours.
 
 This project builds a complete data pipeline that:
 - Ingests historical ERA5 weather data at 500 hPa pressure level (~5,750m altitude)
-- Streams real-time Open-Meteo weather data daily via Apache Kafka and Airflow
+- Streams real-time Open-Meteo weather data daily
 - Engineers features and trains an XGBoost classification model
 - Serves predictions via a FastAPI REST endpoint
 - Displays live GO/NO GO decisions on a Streamlit dashboard
 
+The project was built in two stages: **V1**, a local proof-of-concept pipeline, and **V2**, which takes the same pipeline and deploys it to the cloud so it runs 24/7. Both are documented below.
+
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture (V1 — Local)
 
 ```
 ERA5 Historical Data (.nc)
@@ -41,19 +52,58 @@ Open-Meteo API → Kafka → Airflow → PostgreSQL (openmeteo_raw)
 
 ---
 
+## ☁️ Architecture (V2 — Cloud)
+
+V2 takes the same pipeline from V1 and moves it to the cloud, so it runs continuously without a laptop.
+
+```
+ERA5 Historical Data (.nc)
+        ↓
+Python (cleaning, feature engineering)
+        ↓
+Supabase PostgreSQL (era5_cleaned table)
+        ↓
+Feature Engineering (wind_chill, lag features)
+        ↓
+Supabase PostgreSQL (features_daily table)
+        ↓
+XGBoost Model Training → elbrus_model.pkl
+        ↓
+FastAPI on Render (prediction endpoint)
+        ↓
+Streamlit Community Cloud Dashboard (live GO/NO GO)
+        ↑
+Open-Meteo API → GitHub Actions (daily cron) → Supabase PostgreSQL (openmeteo_raw)
+```
+
+| V1 (local) | V2 (cloud) |
+|---|---|
+| Local PostgreSQL | Supabase (managed PostgreSQL) |
+| FastAPI on `localhost:8000` | FastAPI on Render |
+| Streamlit on `localhost:8501` | Streamlit Community Cloud |
+| Airflow DAG (local, laptop must be on) | GitHub Actions (scheduled, serverless) |
+
+See `MIGRATION_NOTES.md` for the full technical breakdown of what changed and why.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Data ingestion | ERA5 (ECMWF), Open-Meteo API |
-| Message streaming | Apache Kafka |
-| Pipeline orchestration | Apache Airflow |
-| Database | PostgreSQL |
+| Message streaming (V1) | Apache Kafka |
+| Pipeline orchestration (V1) | Apache Airflow |
+| Scheduled fetch (V2) | GitHub Actions |
+| Database (V1) | Local PostgreSQL |
+| Database (V2) | Supabase (managed PostgreSQL) |
 | Data processing | Python, Pandas, NumPy, NetCDF4 |
 | ML model | XGBoost, scikit-learn |
-| API serving | FastAPI, Uvicorn |
-| Dashboard | Streamlit, Plotly |
-| Environment | WSL2 (Ubuntu), Windows |
+| API serving (V1) | FastAPI, Uvicorn — local |
+| API serving (V2) | FastAPI, Uvicorn — deployed on Render |
+| Dashboard (V1) | Streamlit, Plotly — local |
+| Dashboard (V2) | Streamlit, Plotly — deployed on Streamlit Community Cloud |
+| Environment (V1) | WSL2 (Ubuntu), Windows |
 
 ---
 
@@ -106,13 +156,21 @@ Portfolio_Project/
 ├── dashboard.py                             # Streamlit dashboard
 ├── checkmeteo.py                            # Open-Meteo API testing
 ├── elbrus_bg.jpg                            # Dashboard background image
+├── fetch_openmeteo_daily.py                 # V2: standalone fetch script for GitHub Actions
+├── requirements.txt                         # V2: Streamlit Cloud dependencies
+├── requirements-api.txt                     # V2: Render (FastAPI) dependencies
+├── requirements-dashboard.txt                # V2: dashboard dependencies (mirrors requirements.txt)
+├── MIGRATION_NOTES.md                       # V2: local-to-cloud migration details
+├── .github/
+│   └── workflows/
+│       └── daily_openmeteo_fetch.yaml       # V2: GitHub Actions daily fetch schedule
 └── dags/
-    └── openmeteo_pipeline.py                # Airflow DAG
+    └── openmeteo_pipeline.py                # V1: Airflow DAG (local)
 ```
 
 ---
 
-## 🚀 How to Run Locally
+## 🚀 How to Run Locally (V1)
 
 ### Prerequisites
 - Python 3.10+
@@ -174,6 +232,19 @@ python -m streamlit run dashboard.py
 
 ---
 
+## ☁️ Cloud Deployment (V2)
+
+The live deployment (linked at the top of this README) runs on:
+
+- **Database:** [Supabase](https://supabase.com) — free-tier managed PostgreSQL
+- **API:** [Render](https://render.com) — free-tier web service running `app.py` via `requirements-api.txt`
+- **Dashboard:** [Streamlit Community Cloud](https://share.streamlit.io) — running `dashboard.py` via `requirements.txt`
+- **Daily data fetch:** GitHub Actions, scheduled via `.github/workflows/daily_openmeteo_fetch.yaml`, replacing the local Airflow DAG for cloud runs
+
+Credentials are stored as GitHub Secrets (for the Actions workflow) and as platform-specific environment variables/secrets on Render and Streamlit Cloud — never committed to the repo. See `MIGRATION_NOTES.md` for full details on how each service was set up and issues encountered along the way.
+
+---
+
 ## 🔌 FastAPI Endpoint
 
 **POST** `/predict/summit`
@@ -200,6 +271,8 @@ Response:
 }
 ```
 
+Try it live at the [API docs link](https://elbrus-api.onrender.com/docs) above, or locally at `127.0.0.1:8000/docs` when running V1.
+
 ---
 
 ## ⚠️ Known Limitations
@@ -210,8 +283,8 @@ The model was trained on only 123 days (July-August, 2021-2022). This is a proof
 ### 2. Temperature feature not predictive
 Feature importance analysis revealed the model only uses wind speed (58.2%) and precipitation (41.8%). Temperature contributes 0% because July-August temperatures at 500 hPa never dropped below the -20°C threshold in the training data. This means the model will not correctly identify extremely cold days as dangerous.
 
-### 3. Local deployment only
-All services run locally — the pipeline stops when the laptop is off. Cloud deployment is planned as a future enhancement.
+### 3. Free-tier hosting constraints (V2)
+The API (Render) and dashboard (Streamlit Cloud) run on free tiers. The API may spin down after inactivity, causing a 30-60 second delay on the first request after idle.
 
 ### 4. Summit season only
 Training data covers July-August only. Shoulder season conditions (September-October) are not represented.
@@ -224,7 +297,7 @@ Training data covers July-August only. Shoulder season conditions (September-Oct
 - [ ] Reconsider temperature threshold — -10°C or -12°C more realistic for summer
 - [ ] Hybrid OR/AND logic for climbable label
 - [ ] Retrain model with expanded dataset
-- [ ] Cloud deployment (AWS/GCP) for 24/7 pipeline operation
+- [ ] Mobile app (React Native / Flutter) using the same FastAPI backend
 - [ ] Databricks integration for distributed data processing
 - [ ] Mobile-responsive dashboard
 - [ ] Email/SMS alerts for good summit windows
